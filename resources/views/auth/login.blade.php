@@ -3,39 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - LSP Sertifikasi</title>
+    <title>Masuk - LSP Sertifikasi</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .btn-custom-gray {
+            background-color: #e2e2e2 !important;
+            color: #000000 !important;
+            border: none !important;
+        }
+        .btn-custom-gray:hover {
+            background-color: #d0d0d0 !important;
+        }
+    </style>
 </head>
-<body class="bg-light d-flex align-items-center justify-content-center" style="height: 100vh;">
+<body class="bg-light d-flex align-items-center justify-content-center min-vh-100">
 
-<div class="card shadow-sm col-md-4">
-    <!-- Header menggunakan warna bg-dark (hitam gelap) agar matching dengan Navbar Dashboard -->
-    <div class="card-header bg-dark text-white text-center fw-bold py-3">
-        Login System LSP
+<div class="card shadow col-md-4 col-11">
+    <div class="card-header bg-success text-white fw-bold text-center py-3">
+        Masuk
     </div>
     <div class="card-body p-4">
+        {{-- Jika error (misal: email sudah terdaftar), warnanya MERAH (alert-danger) --}}
+        @if(session('error'))
+            <div class="alert alert-danger">{{ session('error') }}</div>
+        @endif
+
+        {{-- Jika success (misal: pendaftaran berhasil), warnanya HIJAU (alert-success) --}}
         @if(session('success'))
-            <div class="alert alert-success fs-6 py-2 alert-dismissible fade show" role="alert">
-                {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
+            <div class="alert alert-success">{{ session('success') }}</div>
         @endif
 
         <form action="{{ route('login.perform') }}" method="POST">
             @csrf
+
             <div class="mb-3">
-                <label class="form-label">Email</label>
-                <input type="email" name="email" class="form-control @error('email') is-invalid @enderror" value="{{ old('email') }}" placeholder="admin@gmail.com" required>
-                @error('email') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                <label class="form-label fw-bold">Email</label>
+                <input type="email" name="email" class="form-control" value="{{ old('email') }}" placeholder="Masukkan email" required>
+                @error('email')
+                    <small class="text-danger">{{ $message }}</small>
+                @enderror
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Password</label>
-                <input type="password" name="password" class="form-control" placeholder="******" required>
+                <label class="form-label fw-bold">Password</label>
+                <input type="password" name="password" class="form-control" maxlength="6" placeholder="******" required>
+                @error('password')
+                    <small class="text-danger">{{ $message }}</small>
+                @enderror
             </div>
 
-            <!-- Tombol diganti menjadi warna hijau (btn-success) -->
-            <button type="submit" class="btn btn-success w-100 fw-bold">Login</button>
+            <button type="submit" class="btn btn-custom-gray w-100 fw-bold py-2 mt-2">Masuk</button>
+
+            <div class="text-center mt-3 d-flex justify-content-between align-items-center">
+                <a href="{{ route('welcome') }}" class="text-decoration-none text-secondary">Kembali ke Utama</a>
+                <a href="{{ route('signup') }}" class="text-decoration-none">Belum punya akun? Daftar</a>
+            </div>
         </form>
     </div>
 </div>

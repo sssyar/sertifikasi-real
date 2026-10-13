@@ -9,7 +9,8 @@ class SkemaController extends Controller
 {
     public function index()
     {
-        $skemas = Skema::latest()->get();
+        // Diubah menggunakan oldest() agar data terlama ada di nomor 1
+        $skemas = Skema::oldest()->get();
         return view('skema.index', compact('skemas'));
     }
 

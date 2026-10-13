@@ -1,71 +1,81 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3>Data Peserta Sertifikasi</h3>
-        <a href="{{ route('peserta.create') }}" class="btn btn-primary">Tambah Peserta</a>
+<div class="container py-2">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-dark">Data Peserta Sertifikasi</h2>
+
+        <!-- Tombol Tambah Peserta HANYA MUNCUL untuk Admin -->
+        @if(auth()->check() && auth()->user()->role === 'admin')
+            <a href="{{ route('peserta.create') }}" class="btn btn-primary fw-bold">Tambah Peserta</a>
+        @endif
     </div>
 
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <form action="{{ route('peserta.index') }}" method="GET">
-                <div class="input-group">
-                    <input type="text" name="search" class="form-control" placeholder="Cari nama, email, atau skema..."
-                        value="{{ request('search') }}">
-                    <button class="btn btn-outline-secondary" type="submit">Cari</button>
-                </div>
-            </form>
+    <!-- FORM PENCARIAN -->
+    <form action="{{ route('peserta.index') }}" method="GET" class="mb-3">
+        <div class="input-group" style="max-width: 400px;">
+            <input type="text" name="search" class="form-control" placeholder="Cari nama, email, atau skema..." value="{{ request('search') }}">
+            <button class="btn btn-outline-secondary" type="submit">Cari</button>
+            @if(request('search'))
+                <a href="{{ route('peserta.index') }}" class="btn btn-outline-danger">Reset</a>
+            @endif
         </div>
-    </div>
+    </form>
 
-    <div class="card shadow-sm">
+    <div class="card border-0 shadow-sm">
         <div class="card-body">
-            <table class="table table-striped table-hover m-0">
-                <thead>
-                    <tr>
-                        <th>No</th>
-                        <th>Nama Peserta</th>
-                        <th>Email</th>
-                        <th>No HP</th>
-                        <th>Skema Sertifikasi</th>
-                        <th class="text-center">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($pesertas as $key => $p)
+            <div class="table-responsive">
+                <table class="table table-hover m-0 align-middle">
+                    <thead>
                         <tr>
-                            <td>{{ $key + 1 }}</td>
-                            <td>{{ $p->nama_peserta }}</td>
-                            <td>{{ $p->email }}</td>
-                            <td>{{ $p->no_hp }}</td>
-                            <td>
-                                <span class="badge bg-info text-dark">
-                                    {{ $p->skema ? $p->skema->nama_skema : 'Tidak ada skema' }}
+                            <th class="py-3 text-secondary">No</th>
+                            <th class="py-3 text-secondary">Nama Peserta</th>
+                            <th class="py-3 text-secondary">Email</th>
+                            <th class="py-3 text-secondary">No HP</th>
+                            <th class="py-3 text-secondary">Skema</th>
+                            <!-- Kolom Aksi hanya muncul jika admin -->
+                            @if(auth()->check() && auth()->user()->role === 'admin')
+                                <th class="py-3 text-secondary text-center">Aksi</th>
+                            @endif
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($pesertas as $index => $peserta)
+                        <tr>
+                            <td class="py-3">{{ $index + 1 }}</td>
+                            <td class="py-3 fw-semibold text-dark">{{ $peserta->nama_peserta }}</td>
+                            <td class="py-3 text-muted">{{ $peserta->email }}</td>
+                            <td class="py-3 text-muted">{{ $peserta->no_hp }}</td>
+
+                            <!-- Kolom Skema -->
+                            <td class="py-3">
+                                <span class="badge bg-info text-white px-3 py-2 fw-semibold">
+                                    {{ $peserta->skema->nama_skema ?? '-' }}
                                 </span>
                             </td>
-                            <td class="text-center">
-                                <!-- Tombol Detail -->
-                                <a href="{{ route('peserta.show', $p->id) }}"
-                                    class="btn btn-sm btn-info text-white">Detail</a>
 
-                                <a href="{{ route('peserta.edit', ['peserta' => $p->id]) }}"
-                                    class="btn btn-sm btn-warning">Edit</a>
-
-                                <form action="{{ route('peserta.destroy', $p->id) }}" method="POST" class="d-inline"
-                                    onsubmit="return confirm('Yakin hapus data peserta ini?')">
+                            <!-- Tombol Aksi Detail, Edit, & Hapus khusus untuk Admin -->
+                            @if(auth()->check() && auth()->user()->role === 'admin')
+                            <td class="py-3 text-center">
+                                <a href="{{ route('peserta.show', $peserta->id) }}" class="btn btn-info btn-sm text-white px-3 fw-semibold">Detail</a>
+                                <a href="{{ route('peserta.edit', $peserta->id) }}" class="btn btn-warning btn-sm text-dark px-3 fw-semibold">Edit</a>
+                                <form action="{{ route('peserta.destroy', $peserta->id) }}" method="POST" class="d-inline">
                                     @csrf
                                     @method('DELETE')
-                                    <button class="btn btn-sm btn-danger">Hapus</button>
+                                    <button type="submit" class="btn btn-danger btn-sm px-3 fw-semibold" onclick="return confirm('Yakin ingin menghapus?')">Hapus</button>
                                 </form>
                             </td>
+                            @endif
                         </tr>
-                    @empty
+                        @empty
                         <tr>
-                            <td colspan="6" class="text-center">Belum ada data peserta.</td>
+                            <td colspan="6" class="text-center py-4 text-muted">Belum ada data peserta yang ditemukan.</td>
                         </tr>
-                    @endforelse
-                </tbody>
-            </table>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
+</div>
 @endsection

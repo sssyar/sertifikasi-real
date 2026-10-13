@@ -22,7 +22,7 @@
                 @error('nama_skema') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
 
-            <button type="submit" class="btn btn-primary">Update Data</button>
+            <button type="submit" class="btn btn-success">Simpan</button>
             <a href="{{ route('skema.index') }}" class="btn btn-secondary">Batal</a>
         </form>
     </div>

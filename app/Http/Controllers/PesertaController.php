@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Peserta;
 use App\Models\Skema;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class PesertaController extends Controller
 {
@@ -28,28 +29,43 @@ class PesertaController extends Controller
 
     public function create()
     {
+        if (Auth::user()->role !== 'admin') {
+            abort(403, 'Unauthorized action.');
+        }
         $skemas = Skema::all();
         return view('peserta.create', compact('skemas'));
     }
 
     public function store(Request $request)
     {
+        if (Auth::user()->role !== 'admin') {
+            abort(403);
+        }
+
         $request->validate([
-            'nama_peserta' => 'required|string|max:255',
-            'email'        => 'required|email|unique:pesertas,email',
-            'no_hp'        => 'required|string|max:15',
-            'skema_id'     => 'required|exists:skemas,id',
+            'nama_peserta' => ['required', 'string', 'max:255', 'regex:/^[a-zA-Z\s]+$/'],
+            'email' => 'required|email|unique:pesertas,email',
+            'no_hp' => 'required|numeric|digits_between:10,13',
+            'skema_id' => 'required|exists:skemas,id',
+        ], [
+            'nama_peserta.required' => 'Nama peserta wajib diisi.',
+            'nama_peserta.regex' => 'Nama lengkap hanya boleh berisi huruf.',
+            'email.required' => 'Email wajib diisi.',
+            'email.email' => 'Format email tidak valid.',
+            'email.unique' => 'Email ini sudah terdaftar.',
+            'no_hp.required' => 'Nomor HP wajib diisi.',
+            'no_hp.numeric' => 'Nomor HP harus berupa angka.',
+            'no_hp.digits_between' => 'Nomor HP harus berupa angka antara 10 sampai 13 digit.',
+            'skema_id.required' => 'Silakan pilih skema sertifikasi terlebih dahulu.',
+            'skema_id.exists' => 'Skema yang dipilih tidak valid.',
         ]);
 
-        try {
-            Peserta::create($request->all());
-            return redirect()->route('peserta.index')->with('success', 'Data peserta berhasil ditambahkan!');
-        } catch (\Exception $e) {
-            return redirect()->back()->withInput()->with('error', 'Gagal menyimpan data: ' . $e->getMessage());
-        }
+        Peserta::create($request->all());
+
+        return redirect()->route('peserta.index')->with('success', 'Data peserta berhasil ditambahkan secara lengkap!');
     }
 
-    public function show($id)
+    public function show(string $id)
     {
         try {
             $peserta = Peserta::with('skema')->findOrFail($id);
@@ -59,8 +75,12 @@ class PesertaController extends Controller
         }
     }
 
-    public function edit($id)
+    public function edit(string $id)
     {
+        if (Auth::user()->role !== 'admin') {
+            abort(403, 'Unauthorized action.');
+        }
+
         try {
             $peserta = Peserta::findOrFail($id);
             $skemas  = Skema::all();
@@ -70,8 +90,12 @@ class PesertaController extends Controller
         }
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, string $id)
     {
+        if (Auth::user()->role !== 'admin') {
+            abort(403, 'Unauthorized action.');
+        }
+
         $request->validate([
             'nama_peserta' => 'required|string|max:255',
             'email'        => 'required|email|unique:pesertas,email,' . $id,
@@ -89,8 +113,12 @@ class PesertaController extends Controller
         }
     }
 
-    public function destroy($id)
+    public function destroy(string $id)
     {
+        if (Auth::user()->role !== 'admin') {
+            abort(403, 'Unauthorized action.');
+        }
+
         try {
             $peserta = Peserta::findOrFail($id);
             $peserta->delete();
